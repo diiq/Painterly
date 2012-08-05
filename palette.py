@@ -28,42 +28,45 @@ WIDTH = 255*3
 
 #A color's gonna be a list of three bits, for now.
 class Color():
-    def __init__(self, web=None, rgb=None, cmy=None):
-        self.web = web
-        self.rgb = rgb
-        self.cmy = cmy
-        if not (web or rgb or cmy):
-            self.web="#000000"
-        self.enrgb()
-        self.encmy()
-        self.enweb()
-
-    def enrgb(self): # DANGER assumes 8-bit color; ? string group
-        if self.web:
-            self.rgb = [int(self.web[1:3], 16),
-                        int(self.web[3:5], 16),
-                        int(self.web[5:], 16)][:]
-        elif self.cmy:
-            self.rgb = map(lambda x: 255-x, self.cmy)
-
-    def encmy(self):
-        if not self.rgb and self.web:
-            self.rgb = self.enrgb()
-        self.cmy = map(lambda x: 255-x, self.rgb)
-
-    def enweb(self):
-        if not self.rgb:
-            self.rgb = self.enrgb()
-        ret = "".join(map(lambda x: hex(x)[2:].zfill(2), self.rgb))
-        self.web = "#" + ret
+    spaces = {}
+    def __init__(self, color, space="web"):
+        self.rgb = Color.spaces[space].to_rgb(color)
 
     def luminosity(self):
         return pow(sum(map(lambda x: pow(x/(1.732*255), 2), self.rgb)), .5)
- 
+
+    def __getattr__(self, name):
+        return Color.spaces[name].from_rgb(self.rgb)
+
+class Colorspace():
+    def __init__(self, name, from_rgb, to_rgb):
+        self.from_rgb = from_rgb
+        self.to_rgb = to_rgb
+        Color.spaces[name] = self
+
+Colorspace("rgb", lambda x: x, lambda x: x)
+
+def web_to_rgb(web):
+    return [int(web[1:3], 16),
+            int(web[3:5], 16),
+            int(web[5:], 16)][:]
+
+def rgb_to_web(rgb):
+    return "#" + "".join([hex(x)[2:].zfill(2) for x in rgb])
+    
+Colorspace("web", rgb_to_web, web_to_rgb)
+
+def rgb_to_cmy(col):
+    return [255-x for x in col]
+
+Colorspace("cmy", rgb_to_cmy, rgb_to_cmy)
+
 def test_Color():    
-    assert Color("#123456").web == "#123456" #shortcut only while self.enweb happens last!
-    assert Color("#ffffff").cmy == [0, 0, 0] #shortcut only while self.enweb happens last!
-    print Color("#ffffff").luminosity()
+    c = Color([255, 255, 255], "rgb")
+    print c.rgb
+#    assert Color("#123456").web == "#123456" #shortcut only while self.enweb happens last!
+#    assert Color("#ffffff").cmy == [0, 0, 0] #shortcut only while self.enweb happens last!
+    print Color("#00aa00").cmy
 
 def palette_vector_pure(color, palette):
     col = np.matrix(color.rgb + [1.0]*(len(palette)-3)).transpose()/255.0
@@ -97,9 +100,9 @@ def swatch_list(palette, vector, l):
 
 
 
-PALETTE = [Color("#b80011"),
-           Color("#0027a7"),
-           Color("#e3ab00")]
+#PALETTE = [Color("#b80011"),
+#           Color("#0027a7"),
+#           Color("#e3ab00")]
 
 class Application(Frame):
     def __init__(self, master=None):
@@ -146,9 +149,9 @@ class Application(Frame):
 
 
 test_Color()
-test_palette_vector()
+#test_palette_vector()
 
 
-app = Application()
-app.master.title("Sample application")
-app.mainloop()
+#app = Application()
+#app.master.title("Sample application")
+#app.mainloop()
