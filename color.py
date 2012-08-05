@@ -10,6 +10,9 @@ class Color():
     def __init__(self, color, space="web"):
         self.rgb = Color.spaces[space].to_rgb(color)
 
+    def luminosity(self): # This should go soon
+        return pow(sum(map(lambda x: pow(x/(1.732*255), 2), self.rgb)), .5)
+
     def __getattr__(self, name):
         return Color.spaces[name].from_rgb(self.rgb)
 

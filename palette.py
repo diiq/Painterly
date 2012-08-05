@@ -25,8 +25,8 @@ from color import *
 
 
 def palette_vector_pure(color, palette):
-    col = np.matrix(color.rgb + [1.0]*(len(palette)-3)).transpose()/255.0
-    transmatrix = np.linalg.inv(np.matrix([c.rgb + [1.0]*(len(palette)-3) for c in palette]).transpose()/255.0)
+    col = np.matrix(color.rgb).transpose()/255.0
+    transmatrix = np.linalg.inv(np.matrix([c.rgb for c in palette]).transpose()/255.0)
     newcol = transmatrix*col
     return newcol.T.tolist()[0]
 
@@ -55,9 +55,8 @@ def swatch_list(palette, vector, l):
     return ret
 
 
-
+from Tkinter import *
 def test_stroke():
-    from Tkinter import *
     
     HEIGHT = 200 
     WIDTH = 255*3
@@ -92,14 +91,14 @@ def test_stroke():
                                          fill=s[i].web, width = 0 )
 
         def create_swatch_a(self):
-            self.create_swatch(Color(rgb=[random.randint(0, 255), 
-                                          random.randint(0, 255), 
-                                          random.randint(0, 255)]) )
+            self.create_swatch(Color([random.randint(0, 255), 
+                                      random.randint(0, 255), 
+                                      random.randint(0, 255)], "rgb") )
 
         def create_swatch(self, color):
             lumins = color.luminosity()
-            lumin_palette = [Color(rgb = [min(255, int(color.luminosity()/x.luminosity()*y))
-                                          for y in x.rgb]) for x in PALETTE] 
+            lumin_palette = [Color([min(255, int(color.luminosity()/x.luminosity()*y))
+                                    for y in x.rgb], "rgb") for x in PALETTE] 
             l = swatch_list(lumin_palette, 
                             palette_vector(color, PALETTE), 
                             (WIDTH/2)*(HEIGHT/2))
