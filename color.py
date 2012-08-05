@@ -44,10 +44,10 @@ Colorspace("cmy", rgb_to_cmy, rgb_to_cmy)
 
 def test_Color():    
     c = Color([255, 255, 255], "rgb")
-    print c.rgb
-#    assert Color("#123456").web == "#123456" #shortcut only while self.enweb happens last!
-#    assert Color("#ffffff").cmy == [0, 0, 0] #shortcut only while self.enweb happens last!
-    print Color("#00aa00").cmy
+    assert c.rgb == [255, 255, 255]
+    assert c.cmy == [0, 0, 0]
+    assert c.web == "#ffffff"
+    assert Color("#123456").web == "#123456"
 
 if __name__ == '__main__':
     test_Color()
