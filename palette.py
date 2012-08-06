@@ -58,6 +58,7 @@ def test_stroke():
     PALETTE = [Color("#b80011"),
                Color("#0027a7"),
                Color("#e3ab00"),
+               Color("#00ab11"),
                Color("#ffffff"),
                Color("#000000")]
 
