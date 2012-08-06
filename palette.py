@@ -22,38 +22,30 @@ import numpy as np
 import random
 from color import *
 
+# New plan! Pick the color on the list closest to aimed-for color.
+def distance(cola, colb):    # eudclidean distance
+    return pow(sum([x*x for x in (colb-cola).rgb]), .5)
 
-
-def palette_vector_pure(color, palette):
-    col = np.matrix(color.rgb).transpose()/255.0
-    transmatrix = np.linalg.inv(np.matrix([c.rgb for c in palette]).transpose()/255.0)
-    newcol = transmatrix*col
-    return newcol.T.tolist()[0]
-
-def palette_vector(color, palette):
-    pure = palette_vector_pure(color, palette)
-    if min(pure) < 0:
-        print "OUT:", pure
-        pure = map(lambda x: max(x, 0), pure)
-    if max(pure) > 1:
-        print "OUTSIDE"
-    if sum(pure):
-        pure = map(lambda x: x*(100/(sum(pure))), pure)
-    return map(int, pure)
-
-def test_palette_vector():
-#    assert palette_vector(Color("#ffffff"), PALETTE) == [0,0,0]
-    print palette_vector(Color("#b80011"), PALETTE)
-    print palette_vector(Color("#0027a7"), PALETTE)
-    print palette_vector(Color("#e3ab00"), PALETTE)
-
-def swatch_list(palette, vector, l):
-    ret = []
-    for i in range(len(palette)):
-        ret.extend([palette[i]]*(vector[i]*l/100))
-    random.shuffle(ret)
+def minimize(things, value_function):
+    m = None
+    ret = None
+    for thing in things:
+        val = value_function(thing)
+        if not m or m > val:
+            m = val
+            ret = thing
     return ret
 
+def closest_color(palette, color):
+    return minimize(palette, lambda x: distance(x, color))
+
+def n_closest(n, palette, color):
+    ret = []
+    cur = color
+    for i in range(n):
+        next = closest_color(palette, cur)
+        err = next-cur
+        cur_color = color+err
 
 from Tkinter import *
 def test_stroke():
@@ -96,19 +88,22 @@ def test_stroke():
                                       random.randint(0, 255)], "rgb") )
 
         def create_swatch(self, color):
-            lumins = color.luminosity()
-            lumin_palette = [Color([min(255, int(color.luminosity()/x.luminosity()*y))
-                                    for y in x.rgb], "rgb") for x in PALETTE] 
-            l = swatch_list(lumin_palette, 
-                            palette_vector(color, PALETTE), 
-                            (WIDTH/2)*(HEIGHT/2))
+            # lumins = color.luminosity()
+            # lumin_palette = [Color([min(255, int(color.luminosity()/x.luminosity()*y))
+            #                         for y in x.rgb], "rgb") for x in PALETTE] 
+            # l = swatch_list(lumin_palette, 
+            #                 palette_vector(color, PALETTE), 
+            #                 (WIDTH/2)*(HEIGHT/2))
         
   
-            for i in range(WIDTH/2):
-                for j in range(HEIGHT/2):
-                    if  (i*HEIGHT/2)+j < len(l):
-                        self.c.create_line(i, HEIGHT/2+j, i, HEIGHT/2+j+1, 
-                                           fill=l[(i*HEIGHT/2)+j].web)
+            # for i in range(WIDTH/2):
+            #     for j in range(HEIGHT/2):
+            #         if  (i*HEIGHT/2)+j < len(l):
+            #             self.c.create_line(i, HEIGHT/2+j, i, HEIGHT/2+j+1, 
+            #                                fill=l[(i*HEIGHT/2)+j].web)
+            pal = closest_color(PALETTE, color)
+            p = self.c.create_rectangle ( 0, HEIGHT/2, WIDTH/2, HEIGHT, 
+                                          fill=pal.web, width = 0 )
             p = self.c.create_rectangle ( WIDTH/2, HEIGHT/2, WIDTH, HEIGHT, 
                                           fill=color.web, width = 0 )
 

@@ -5,16 +5,20 @@
 # I'm calling these things color spaces, but really they're color
 # *representations* -- some of them are spaces, and some aren't.
 
-class Color():
+class Color(object):
     spaces = {}
     def __init__(self, color, space="web"):
         self.rgb = Color.spaces[space].to_rgb(color)
 
-    def luminosity(self): # This should go soon
-        return pow(sum(map(lambda x: pow(x/(1.732*255), 2), self.rgb)), .5)
+    def __sub__(self, color):
+        diff = [x[0]-x[1] for x in zip(self.rgb, color.rgb)]
+        return Color(diff, "rgb")
 
     def __getattr__(self, name):
+#        try: 
         return Color.spaces[name].from_rgb(self.rgb)
+ #       except:
+  #          return self.__dict__[name]
 
 class Colorspace():
     def __init__(self, name, from_rgb, to_rgb):
@@ -51,6 +55,7 @@ def test_Color():
     assert c.cmy == [0, 0, 0]
     assert c.web == "#ffffff"
     assert Color("#123456").web == "#123456"
+    print (c-Color("#203948")).rgb
 
 if __name__ == '__main__':
     test_Color()
