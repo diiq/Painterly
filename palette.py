@@ -14,7 +14,7 @@ import numpy as np
 import random
 from color import *
 
-def distance(color_a, color_b):    # eudclidean distance
+def distance(color_a, color_b):    # Eudclidean color distance
     return pow(sum([x*x for x in (color_b-color_a).rgb]), .5)
 
 def minimize(things, value_function): # something python needs (?)
@@ -27,10 +27,12 @@ def minimize(things, value_function): # something python needs (?)
     return ret
 
 def closest_color(palette, color):
+    # Which color out of palette is closest in RGB to the given color?
     return minimize(palette, lambda x: distance(x, color))
 
 def n_closest(n, palette, color): 
-    # approximates a vector in palette-space for color
+    # Answers: How much do I mix of each swatch from palette to get
+    # the requested color? It's a vector in palette-color space!
     ret = [0 for c in palette]
     cur = color
     for i in range(n): # 1D error diffusion
@@ -40,15 +42,21 @@ def n_closest(n, palette, color):
     return ret
 
 def palette_vector_to_rgb(vector, palette):
+    # Transforms my vector in palette-color space back into RGB.
     basis = [v[1]*v[0] for v in zip(vector, palette)]
     return (sum(basis, Color("#000000"))/sum(vector)).rgb
 
 def make_palette_space(name, palette):
+    # Adds a colorspace to the Color class, given a palette.
     def to_rgb(vector):
         return palette_vector_to_rgb(vector, palette)
     def to_vect(rgb):
         return n_closest(255, palette, Color(rgb, "rgb"))
     Colorspace(name, to_vect, to_rgb)
+
+
+
+
 
 from Tkinter import *
 def test_stroke():
@@ -60,11 +68,59 @@ def test_stroke():
                Color("#0027a7"),
                Color("#e3ab00"),
                Color("#00ab11"),
-               Color("#ffffee")]
+               Color("#ffffee")] # Some of the colors I paint with.
 
     make_palette_space("test_", PALETTE)
 
     class Application(Frame):
+
+        def create_swatch(self, color):
+
+            # Lay down a swatch of the desired color.
+            p = self.c.create_rectangle(WIDTH/2, HEIGHT/2, WIDTH, HEIGHT, 
+                                        fill=color.web, width = 0)
+
+            # Pull the color into palette-mixture-space:
+            streaks = color.test_
+
+            # A little goofy: push my converted color *back* to RGB
+            # --- this will remix it, so I can lay down a second
+            # swatch and show how far from the first swatch I've
+            # fallen.
+
+            mix = Color(streaks, "test_")
+
+            p = self.c.create_rectangle(0, 
+                                        HEIGHT/2, 
+                                        WIDTH/2, 
+                                        HEIGHT, 
+                                        fill=mix.web, 
+                                        width = 0)
+
+
+            # Draw lines of palette colors, proporionally, randomly,
+            # over my remixed swatch:
+
+            mixing = self.mixing.get()
+            streaking_adjustment = self.streaking.get()/float(sum(streaks))
+            for streak, count in zip(PALETTE, streaks):
+                count = int(count * streaking_adjustment)
+                while count > 0:
+                    col = (streak*(1-mixing) + mix*(mixing)) #weighted avg
+                    loc = random.randint(0, WIDTH/2)
+                    width = random.randint(0, count)
+                    count -= width
+                    self.c.create_line(loc, 
+                                       HEIGHT/2,
+                                       loc,
+                                       HEIGHT,
+                                       width = width,
+                                       fill=col.web)
+
+
+
+        ### It's just GUI Balderdash from here. Nothin' to see. ###
+
         def create_palette(self, c, *s):
             for i in range(len(s)):
                 p = c.create_rectangle(i*WIDTH/len(s), 
@@ -79,46 +135,6 @@ def test_stroke():
                                       random.randint(0, 255), 
                                       random.randint(0, 255)], "rgb"))
 
-        def create_swatch(self, color):
-            streaks = color.test_
-
-            # A little goofy: here I push my converted color *back*
-            # --- this will remix, and show how far from the ideal
-            # swatch I've fallen.
-
-            mix = Color(streaks, "test_")
-
-            p = self.c.create_rectangle(0, 
-                                        HEIGHT/2, 
-                                        WIDTH/2, 
-                                        HEIGHT, 
-                                        fill=mix.web, 
-                                        width = 0)
-
-
-            # Draw lines of palette colors, proporionally, randomly:
-            mixing = self.mixing.get()
-            streaking_adjustment = self.streaking.get()/float(sum(streaks))
-            for streak, count in zip(PALETTE, streaks):
-                count = int(count * streaking_adjustment)
-                while count > 0:
-                    col = (streak*(1-mixing) + color*(mixing)) #weighted avg
-                    loc = random.randint(0, WIDTH/2)
-                    width = random.randint(0, count)
-                    count -= width
-                    self.c.create_line(loc, 
-                                       HEIGHT/2,
-                                       loc,
-                                       HEIGHT,
-                                       width = width,
-                                       fill=col.web)
-
-
-            p = self.c.create_rectangle(WIDTH/2, HEIGHT/2, WIDTH, HEIGHT, 
-                                        fill=color.web, width = 0)
-
-
-        ### GUI Balderdash from here on out, folks. Nothin' to see here. ###
 
         def __init__(self, master=None):
             Frame.__init__(self, master)
