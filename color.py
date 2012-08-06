@@ -18,6 +18,14 @@ class Color(object):
         diff = [sum(x) for x in zip(self.rgb, color.rgb)]
         return Color(diff, "rgb")
 
+    def __mul__(self, num):
+        diff = [x*num for x in self.rgb]
+        return Color(diff, "rgb")
+
+    def __div__(self, num):
+        diff = [x/num for x in self.rgb]
+        return Color(diff, "rgb")
+
     def __getattr__(self, name):
 #        try: 
         return Color.spaces[name].from_rgb(self.rgb)

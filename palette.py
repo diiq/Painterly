@@ -40,13 +40,16 @@ def closest_color(palette, color):
     return minimize(palette, lambda x: distance(x, color))
 
 def n_closest(n, palette, color):
-    ret = []
+    ret = {}
     cur = color
     for i in range(n):
         next = closest_color(palette, cur)
         err = cur-next
         cur = color+err
-        ret.append(next)
+        if next in ret:
+            ret[next] += 1
+        else:
+            ret[next] = 1
     return ret
 
 from Tkinter import *
@@ -93,13 +96,24 @@ def test_stroke():
                                       random.randint(0, 255)], "rgb") )
 
         def create_swatch(self, color):
-            l = n_closest((WIDTH/2)*(HEIGHT/2), PALETTE, color)
-  
-            for i in range(WIDTH/2):
-                for j in range(HEIGHT/2):
-                    if  (i*HEIGHT/2)+j < len(l):
-                        self.c.create_line(i, HEIGHT/2+j, i, HEIGHT/2+j+1, 
-                                           fill=l[(i*HEIGHT/2)+j].web)
+            p = self.c.create_rectangle ( 0, HEIGHT/2, WIDTH/2, HEIGHT, 
+                                          fill=color.web, width = 0 )
+
+            l = n_closest(50, PALETTE, color)
+            # Draw val lines of key color, randomly:
+            for cola in l.keys():
+                for colb in l.keys():
+                    if cola == colb:
+                        continue
+                    for i in range(l[cola]):
+                        col = (cola*l[cola] + colb*l[colb])/(l[cola]+l[colb]) #weighted avg
+                        loc = random.randint(0, WIDTH/2)
+                        self.c.create_line(loc, 
+                                           HEIGHT/2,
+                                           loc, 
+                                           HEIGHT,
+                                           fill=col.web)
+
 
             p = self.c.create_rectangle ( WIDTH/2, HEIGHT/2, WIDTH, HEIGHT, 
                                           fill=color.web, width = 0 )
