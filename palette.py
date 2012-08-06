@@ -14,28 +14,18 @@ import numpy as np
 import random
 from color import *
 
-def distance(color_a, color_b):    # Eudclidean color distance
-    return pow(sum([x*x for x in (color_b-color_a).rgb]), .5)
-
-def minimize(things, value_function): # something python needs (?)
-    m = ret = None
-    for thing in things:
-        val = value_function(thing)
-        if not m or m > val:
-            m = val
-            ret = thing
-    return ret
 
 def closest_color(palette, color):
     # Which color out of palette is closest in RGB to the given color?
-    return minimize(palette, lambda x: distance(x, color))
+    return minimize(palette, lambda x: color_distance(x, color))
 
 def n_closest(n, palette, color): 
     # Answers: How much do I mix of each swatch from palette to get
-    # the requested color? It's a vector in palette-color space!
+    # the requested color? It's a vector in
+    # palette-mixing-color-super-happy-fun space!
     ret = [0 for c in palette]
     cur = color
-    for i in range(n): # 1D error diffusion
+    for i in range(n): # error propogation
         next = closest_color(palette, cur)
         cur = color+cur-next
         ret[palette.index(next)] += 1
@@ -182,5 +172,19 @@ def test_stroke():
     app.mainloop()
 
 
+### Utilities ###
+
+def minimize(things, value_function): # something python needs (?)
+    m = ret = None
+    for thing in things:
+        val = value_function(thing)
+        if not m or m > val:
+            m = val
+            ret = thing
+    return ret
+
 if __name__=='__main__':
     test_stroke()
+
+
+

@@ -13,6 +13,13 @@ class Color(object):
         # All colors are stored as RGB.
         self.rgb = Color.spaces[space].to_rgb(color)
 
+    # self.name_of_space returns the color coverted to name_of_space
+    # representation
+    def __getattr__(self, name):
+        return Color.spaces[name].from_rgb(self.rgb)
+
+    ## Color Arithmetic: ##
+
     def __sub__(self, color):
         diff = [x[0]-x[1] for x in zip(self.rgb, color.rgb)]
         return Color(diff, "rgb")
@@ -29,11 +36,11 @@ class Color(object):
         diff = [int(x/num) for x in self.rgb]
         return Color(diff, "rgb")
 
-    def __getattr__(self, name):
-        return Color.spaces[name].from_rgb(self.rgb)
+def color_distance(color_a, color_b):    # Eudclidean color distance
+    return pow(sum([x*x for x in (color_b-color_a).rgb]), .5)
 
-# A colorspace/representation is stored just as way of converting to and from
-# RGB.
+# A colorspace/representation is stored as way of converting to and
+# from RGB.
 class Colorspace():
     def __init__(self, name, from_rgb, to_rgb):
         self.from_rgb = from_rgb
@@ -69,7 +76,7 @@ def test_Color():
     assert c.cmy == [0, 0, 0]
     assert c.web == "#ffffff"
     assert Color("#123456").web == "#123456"
-    print (c-Color("#203948")).rgb
+    assert (c-Color("#203948")).rgb == [223, 198, 183]
 
 if __name__ == '__main__':
     test_Color()
