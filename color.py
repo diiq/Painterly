@@ -8,6 +8,7 @@
 class Color(object):
     spaces = {}
     def __init__(self, color, space="web"):
+        # All colors are stored as RGB.
         self.rgb = Color.spaces[space].to_rgb(color)
 
     def __sub__(self, color):
@@ -19,33 +20,31 @@ class Color(object):
         return Color(diff, "rgb")
 
     def __mul__(self, num):
-        diff = [x*num for x in self.rgb]
+        diff = [int(x*num) for x in self.rgb]
         return Color(diff, "rgb")
 
     def __div__(self, num):
-        diff = [x/num for x in self.rgb]
+        diff = [int(x/num) for x in self.rgb]
         return Color(diff, "rgb")
 
     def __getattr__(self, name):
-#        try: 
         return Color.spaces[name].from_rgb(self.rgb)
- #       except:
-  #          return self.__dict__[name]
 
+# A colorspace is just a way of converting to and from RGB. 
 class Colorspace():
     def __init__(self, name, from_rgb, to_rgb):
         self.from_rgb = from_rgb
         self.to_rgb = to_rgb
         Color.spaces[name] = self
 
+# RGB colorspace is default
+
 Colorspace("rgb", lambda x: x, lambda x: x)
 
 # Hex representation
 
 def web_to_rgb(web):
-    return [int(web[1:3], 16),
-            int(web[3:5], 16),
-            int(web[5:], 16)][:]
+    return [int(web[1:3], 16), int(web[3:5], 16), int(web[5:], 16)][:]
 
 def rgb_to_web(rgb):
     return "#" + "".join([hex(x)[2:].zfill(2) for x in rgb])
