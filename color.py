@@ -4,6 +4,8 @@
 
 # I'm calling these things color spaces, but really they're color
 # *representations* -- some of them are spaces, and some aren't.
+#
+# NOTE THAT ALL COLOR-ARITHMETIC WILL BE IN RGB!1111!!
 
 class Color(object):
     spaces = {}
@@ -30,7 +32,8 @@ class Color(object):
     def __getattr__(self, name):
         return Color.spaces[name].from_rgb(self.rgb)
 
-# A colorspace is just a way of converting to and from RGB. 
+# A colorspace/representation is stored just as way of converting to and from
+# RGB.
 class Colorspace():
     def __init__(self, name, from_rgb, to_rgb):
         self.from_rgb = from_rgb
