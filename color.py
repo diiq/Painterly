@@ -41,7 +41,7 @@ class Colorspace():
 
 Colorspace("rgb", lambda x: x, lambda x: x)
 
-# Hex representation
+# Hex representation: #ffc035
 
 def web_to_rgb(web):
     return [int(web[1:3], 16), int(web[3:5], 16), int(web[5:], 16)][:]
@@ -51,7 +51,7 @@ def rgb_to_web(rgb):
     
 Colorspace("web", rgb_to_web, web_to_rgb)
 
-# CMY colorspace
+# CMY colorspace --- It's useful 'cause it's subtractive.
 
 def rgb_to_cmy(col):
     return [255-x for x in col]
