@@ -44,8 +44,10 @@ def n_closest(n, palette, color):
     cur = color
     for i in range(n):
         next = closest_color(palette, cur)
-        err = next-cur
-        cur_color = color+err
+        err = cur-next
+        cur = color+err
+        ret.append(next)
+    return ret
 
 from Tkinter import *
 def test_stroke():
@@ -55,7 +57,9 @@ def test_stroke():
 
     PALETTE = [Color("#b80011"),
                Color("#0027a7"),
-               Color("#e3ab00")]
+               Color("#e3ab00"),
+               Color("#ffffff"),
+               Color("#000000")]
 
     class Application(Frame):
         def __init__(self, master=None):
@@ -88,22 +92,14 @@ def test_stroke():
                                       random.randint(0, 255)], "rgb") )
 
         def create_swatch(self, color):
-            # lumins = color.luminosity()
-            # lumin_palette = [Color([min(255, int(color.luminosity()/x.luminosity()*y))
-            #                         for y in x.rgb], "rgb") for x in PALETTE] 
-            # l = swatch_list(lumin_palette, 
-            #                 palette_vector(color, PALETTE), 
-            #                 (WIDTH/2)*(HEIGHT/2))
-        
+            l = n_closest((WIDTH/2)*(HEIGHT/2), PALETTE, color)
   
-            # for i in range(WIDTH/2):
-            #     for j in range(HEIGHT/2):
-            #         if  (i*HEIGHT/2)+j < len(l):
-            #             self.c.create_line(i, HEIGHT/2+j, i, HEIGHT/2+j+1, 
-            #                                fill=l[(i*HEIGHT/2)+j].web)
-            pal = closest_color(PALETTE, color)
-            p = self.c.create_rectangle ( 0, HEIGHT/2, WIDTH/2, HEIGHT, 
-                                          fill=pal.web, width = 0 )
+            for i in range(WIDTH/2):
+                for j in range(HEIGHT/2):
+                    if  (i*HEIGHT/2)+j < len(l):
+                        self.c.create_line(i, HEIGHT/2+j, i, HEIGHT/2+j+1, 
+                                           fill=l[(i*HEIGHT/2)+j].web)
+
             p = self.c.create_rectangle ( WIDTH/2, HEIGHT/2, WIDTH, HEIGHT, 
                                           fill=color.web, width = 0 )
 
